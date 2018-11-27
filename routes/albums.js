@@ -50,29 +50,50 @@ router.get("/", function(req, res){
     }
 });
 
-//CREATE - add new album to DB
-router.post("/", middleware.isLoggedIn, upload.single('image'), function(req, res) {
-    cloudinary.v2.uploader.upload(req.file.path, function(err, result) {
-      if(err) {
-        req.flash('error', err.message);
-        return res.redirect('back');
-      }
-            // add cloudinary url for the image to the album object under image property
-          req.body.album.image = result.secure_url;
-          req.body.album.imageId = result.public_id;
-            req.body.album.author = {
-            id: req.user._id,
-            username: req.user.username
-          };
-          Album.create(req.body.album, function(err, album) {
-            if (err) {
-              req.flash('error', err.message);
-              return res.redirect('back');
-            }
-            res.redirect('/albums/' + album.id);
-          });
-        });
+router.post("/", middleware.isLoggedIn, upload.array("album[image]"), async function(req, res){
+    // add author to album
+    req.body.album.author = {
+        id: req.user._id,
+        username: req.user.username
+    };
+
+    req.body.album.image = [];
+    for (const file of req.files) {
+        let result = await cloudinary.uploader.upload(file.path);
+        req.body.album.image.push(result.secure_url);
+    }
+
+    Album.create(req.body.album, function(err, album) {
+        if (err) {
+            return res.redirect('back');
+        }
+        res.redirect('/albums/' + album.id);
+    });
 });
+
+// //create - add new album to DB
+// router.post("/", middleware.isLoggedIn, upload.array("album[image]"), async function(req, res){
+//     // add author to album
+//     req.body.album.author = {
+//         id: req.user._id,
+//         username: req.user.username
+//     };
+
+//     req.body.album.author = [];
+//     for (const file of req.files) {
+//         let result = await cloudinary.v2.uploader.upload(file.path);
+//         req.body.album.image.push(result.secure_url);
+//     }
+
+//     Album.create(req.body.album, function(err, album) {
+//         if (err) {
+//             return res.redirect('back');
+//         }
+//         res.redirect('/albums/' + album.id);
+//     });
+// });
+
+
 router.get("/new", middleware.isLoggedIn, function(req, res){
    res.render("albums/new"); 
 });

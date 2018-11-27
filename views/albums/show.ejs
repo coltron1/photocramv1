@@ -8,7 +8,9 @@
     </div>
   <div class="col-md-9">
     <div class="thumbnail">
-      <img class="img-responsive" src="<%= album.image %>">
+      <% for(var i=0; i < album.image.length; i++) { %>
+         <img class="img-responsive" src="<%=album.image[i]%>">
+      <% } %>
       <div class="caption-full">
         <h4><a><%=album.name%></a></h4>
         <p><%= album.description %></p>

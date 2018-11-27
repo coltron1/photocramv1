@@ -28,7 +28,7 @@
         <% albums.forEach(function(album){ %>
             <div class="col-md-3 col-sm-6">
                 <div class="thumbnail">
-                    <img src="<%=album.image %>">
+                    <img src="<%=album.image[0] %>">
                     <div class="caption">
                         <h4> <%= album.name %> </h4>
                     </div>
