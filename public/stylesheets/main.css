@@ -2,6 +2,10 @@ body {
     background: rgb(222, 227, 234);
 }
 
+.center {
+    text-align: center;
+}
+
 .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
     color: #000; /*Sets the text hover color on navbar*/
 }
@@ -67,7 +71,41 @@ body {
     
 }
 
+.profilename {
+    font-size: xx-large;
+    text-align: left;
+    font-family: 'Permanent Marker', cursive;
+}
+
+.customrow {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 4px;
+}
+
+.customcolumn {
+  flex: 50%;
+  padding: 0 4px;
+}
+
+.customcolumn img {
+  margin-top: 8px;
+  vertical-align: middle;
+}
+
+.img {
+    position: relative;
+    float: left;
+    width:  100px;
+    height: 100px;
+    background-position: 50% 50%;
+    background-repeat:   no-repeat;
+    background-size:     cover;
+}
 
 #userAlbums {
     float: right;
 }
+
+
+

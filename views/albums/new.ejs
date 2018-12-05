@@ -4,15 +4,15 @@
         <div style="width: 30%; margin: 25px auto;">
             <form action="/albums" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
+                    <label for="Title">Title</label>
                     <input class="form-control" type="text" name="album[name]" placeholder="name">
                 </div>
-<a href="#" id="upload_widget_opener">Upload multiple images</a>
-
                 <div class="form-group">
                     <label for="image">Image</label>
                     <input type="file" id="image" name="album[image]" accept="image/*" multiple required>
                 </div>
                 <div class="form-group">
+                    <label for="description">Description</label>
                     <input class="form-control" type="text" name="album[description]" placeholder="description">
                 </div>
                 <div class="form-group">

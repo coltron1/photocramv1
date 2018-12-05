@@ -54,13 +54,18 @@ router.post("/", middleware.isLoggedIn, upload.array("album[image]"), async func
     // add author to album
     req.body.album.author = {
         id: req.user._id,
-        username: req.user.username
+        username: req.user.username,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        avatar: req.user.avatar,
     };
 
     req.body.album.image = [];
+    req.body.album.imageId = [];
     for (const file of req.files) {
-        let result = await cloudinary.uploader.upload(file.path);
+        let result = await cloudinary.v2.uploader.upload(file.path, {quality: 10});
         req.body.album.image.push(result.secure_url);
+        req.body.album.imageId.push(result.public_id);
     }
 
     Album.create(req.body.album, function(err, album) {
@@ -70,29 +75,6 @@ router.post("/", middleware.isLoggedIn, upload.array("album[image]"), async func
         res.redirect('/albums/' + album.id);
     });
 });
-
-// //create - add new album to DB
-// router.post("/", middleware.isLoggedIn, upload.array("album[image]"), async function(req, res){
-//     // add author to album
-//     req.body.album.author = {
-//         id: req.user._id,
-//         username: req.user.username
-//     };
-
-//     req.body.album.author = [];
-//     for (const file of req.files) {
-//         let result = await cloudinary.v2.uploader.upload(file.path);
-//         req.body.album.image.push(result.secure_url);
-//     }
-
-//     Album.create(req.body.album, function(err, album) {
-//         if (err) {
-//             return res.redirect('back');
-//         }
-//         res.redirect('/albums/' + album.id);
-//     });
-// });
-
 
 router.get("/new", middleware.isLoggedIn, function(req, res){
    res.render("albums/new"); 
@@ -119,50 +101,59 @@ router.get("/:id/edit", middleware.checkAlbumOwnership, function(req, res){
     });
 });
 
-router.put("/:id", upload.single('image'), function(req, res){
-    Album.findById(req.params.id, async function(err, album){
+
+router.put("/:id", upload.array("album[image]"), function(req, res){
+    Album.findById(req.params.id, async function(err, foundAlbum){
         if(err){
             req.flash("error", err.message);
             res.redirect("back");
         } else {
             if (req.file) {
-              try {
-                  await cloudinary.v2.uploader.destroy(album.imageId);
-                  var result = await cloudinary.v2.uploader.upload(req.file.path);
-                  album.imageId = result.public_id;
-                  album.image = result.secure_url;
+                try {
+                    for(var i=0; i<foundAlbum.imageId.length; i++){    
+                        await cloudinary.v2.uploader.destroy(foundAlbum.imageId[i]);
+                    }                
+                    for (const file of req.files) {
+                    let result = await cloudinary.v2.uploader.upload(file.path, {quality: "auto"});
+                    req.body.album.image.push(result.secure_url);
+                    req.body.album.imageId.push(result.public_id);
+                    }
               } catch(err) {
                   req.flash("error", err.message);
                   return res.redirect("back");
               }
             }
-            album.name = req.body.name;
-            album.description = req.body.description;
-            album.save();
+            foundAlbum.name = req.body.name;
+            foundAlbum.description = req.body.description;
+            foundAlbum.save();
             req.flash("success","Successfully Updated!");
-            res.redirect("/albums/" + album._id);
+            res.redirect("/albums/" + foundAlbum._id);
         }
     });
 });
 
-router.delete('/:id', function(req, res) {
-  Album.findById(req.params.id, async function(err, album) {
-    if(err) {
-      req.flash("error", err.message);
-      return res.redirect("back");
-    }
-    try {
-        await cloudinary.v2.uploader.destroy(album.imageId);
-        album.remove();
-        req.flash('success', 'Album deleted successfully!');
-        res.redirect('/albums');
-    } catch(err) {
+router.delete('/:id', middleware.checkAlbumOwnership, function(req, res) {
+    Album.findById(req.params.id, async function(err, foundAlbum) {
         if(err) {
           req.flash("error", err.message);
           return res.redirect("back");
         }
-    }
-  });
+        try {
+            for(var i=0; i<foundAlbum.imageId.length; i++){
+                console.log("this is imageId " + i);
+                console.log(foundAlbum.imageId[i]);
+                await cloudinary.v2.uploader.destroy(foundAlbum.imageId[i]);
+            }
+            foundAlbum.remove();
+            req.flash("success", "Album was deleted successfully");
+            res.redirect("/albums");
+        } catch(err){
+            if(err){
+                req.flash("error", err.message);
+                return res.redirect("back");
+            }
+        }
+    });
 });
 
 function escapeRegex(text) {

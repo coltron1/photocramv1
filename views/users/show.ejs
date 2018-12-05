@@ -1,0 +1,31 @@
+<% include ../partials/header.ejs %>
+
+<div class="jumbotron">
+            <div class="col-md=9">
+                <div class="profilename">
+                <%= user.firstName + " " + user.lastName %>
+                </div>
+                <img class="img-responsive" src="<%= user.avatar %>" alt="user profile image" style="width:128px; height:128px;">
+            </div>
+</div>
+<div class="row col-lg-12 text-center">
+    <h3><%= user.firstName %>'s Albums</h3>
+</div>
+
+    <div class="row text-center">
+        <% albums.forEach(function(album){ %>
+            <div class="col-sm-6 col-md-3">
+                <div class="thumbnail">
+                    <img src="<%=album.image[0] %>">
+                    <div class="caption">
+                        <h4> <%= album.name %> </h4>
+                    </div>
+                    <p>
+                        <a href="/albums/<%= album._id %>" class="btn btn-primary">Show Album</a>
+                    </p>
+                </div>
+            </div>
+        <% }); %>
+    </div>
+</div>
+<% include ../partials/footer.ejs %>
